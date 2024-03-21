@@ -1,32 +1,51 @@
-const express = require('express');
-const axios = require('axios');
+window.addEventListener('load', () => {
+  navigator.serviceWorker.register('../sw.js?v=2', {
+    scope: '/a/',
+  })
+})
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+const form = document.getElementById('fs')
+const input = document.getElementById('is')
 
-// Middleware to parse JSON and URL encoded bodies
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+if (form && input) {
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault()
+    processUrl(input.value, '/1')
+  })
+}
 
-// Endpoint to proxy requests
-app.post('/get/gateway', async (req, res) => {
-    const url = req.body.url;
-    try {
-        const response = await axios.get(url, {
-            proxy: {
-                host: '172.67.180.55',
-                port: 80 // Adjust the port as per your proxy server configuration
-            }
-        });
-        res.send(response.data);
-    } catch (error) {
-        res.status(500).send('Error: ' + error.message);
-    }
-});
+function processUrl(value, path) {
+  let url = value.trim()
+  const engine = localStorage.getItem('engine')
+  const searchUrl = engine ? engine : 'https://www.google.com/search?q='
 
-// Serve static files (HTML, CSS, JS)
-app.use(express.static('public'));
+  if (!isUrl(url)) {
+    url = searchUrl + url
+  } else if (!(url.startsWith('https://') || url.startsWith('http://'))) {
+    url = 'https://' + url
+  }
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+  sessionStorage.setItem('GoUrl', __uv$config.encodeUrl(url))
+  const dy = localStorage.getItem('dy')
+
+  if (path) {
+    location.href = path
+  } else if (dy === 'true') {
+    window.location.href = '/a/q/' + __uv$config.encodeUrl(url)
+  } else {
+    window.location.href = '/a/' + __uv$config.encodeUrl(url)
+  }
+}
+
+function go(value) {
+  processUrl(value, '/1')
+}
+
+function blank(value) {
+  processUrl(value)
+}
+
+function isUrl(val = '') {
+  if (/^http(s?):\/\//.test(val) || (val.includes('.') && val.substr(0, 1) !== ' ')) return true
+  return false
+}
