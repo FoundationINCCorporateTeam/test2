@@ -15,7 +15,7 @@ app.post('/get/gateway', async (req, res) => {
         const response = await axios.get(url, {
             proxy: {
                 host: '172.67.180.55',
-                port: 8080 // Adjust the port as per your proxy server configuration
+                port: 80 // Adjust the port as per your proxy server configuration
             }
         });
         res.send(response.data);
